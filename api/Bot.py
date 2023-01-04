@@ -31,8 +31,13 @@ class Bot:
             
     def get_bot_response(self):
         self.user_history = self.DB.get_messages_by_chat_id(self.chat_id)
-
-        if self.user_history and self.user_history[-1]['context'] in ['ask_link_to_search_products', 'not_handled - not_found_link', 'not_handled - wrong_url', 'gived_up_to_search_products_in_link']:
+        
+        if not self.user_history or 'buscar' in self.user_message or '/start' in self.user_message:
+            self.send_message('Olá! Eu sou o OLX Searcher, minha função é buscar produtos da OLX baseado nas suas pesquisas e enviar para você todos os dias os novos produtos postados no site!')
+            self.send_message('Para buscar produtos, me envie o link da pesquisa que você procura os produtos. \nExemplo: https://rn.olx.com.br/moveis?pe=300&ps=100&q=mesa')
+            self.context = 'ask_link_to_search_products'
+            
+        elif self.user_history and self.user_history[-1]['context'] in ['ask_link_to_search_products', 'not_handled - not_found_link', 'not_handled - wrong_url', 'gived_up_to_search_products_in_link']:
             self.url = find_url_in_text(self.user_message)
             if self.url:            
                 if is_olx_url(self.url):
@@ -60,11 +65,6 @@ class Bot:
                 self.send_message('Tudo bem. Se você ainda quiser prosseguir, siga as dicas:')
                 self.send_message('1. Entre no site da OLX: https://olx.com.br/\n2. Pesquise o produto\n3.Aplique os filtros do site, se você desejar.\n4. Lá em cima da janela do navegador, copie o link e me envie aqui. \n\nEstou aguardando! :D')
 
-        
-        elif not self.user_history or 'buscar' in self.user_message or '/start' in self.user_message:
-            self.send_message('Olá! Eu sou o OLX Searcher, minha função é buscar produtos da OLX baseado nas suas pesquisas e enviar para você todos os dias os novos produtos postados no site!')
-            self.send_message('Para buscar produtos, me envie o link da pesquisa que você procura os produtos. \nExemplo: https://rn.olx.com.br/moveis?pe=300&ps=100&q=mesa')
-            self.context = 'ask_link_to_search_products'
             
         elif self.user_message == '/cancelar':
             links = requests.get(f'{APP_HOST}/api/search/get_links_per_user?chat_id={self.chat_id}&url={self.url}').json()
