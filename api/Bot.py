@@ -5,6 +5,8 @@ from .Database import Database
 from .utils import find_url_in_text, is_olx_url
 
 import requests
+import os
+APP_HOST = os.environ.get('APP_HOST')
 
 class Bot:
     def __init__(self):
@@ -51,6 +53,7 @@ class Bot:
                 print('context:',self.context)
                 if self.context:
                     self.context = ''
+                    requests.get(f'{APP_HOST}/api/search/insert_search?chat_id={self.chat_id}&url={self.url}')
                     self.send_message('Perfeito! Amanhã, cerca de 12h, estou lhe enviando os produtos')
             else:
                 self.context = 'gived_up_to_search_products_in_link'
@@ -63,6 +66,13 @@ class Bot:
             self.send_message('Para buscar produtos, me envie o link da pesquisa que você procura os produtos. \nExemplo: https://rn.olx.com.br/moveis?pe=300&ps=100&q=mesa')
             self.context = 'ask_link_to_search_products'
             
+        elif self.user_message == 'cancelar':
+            links = requests.get(f'{APP_HOST}/api/search/insert_search?chat_id={self.chat_id}&url={self.url}').json()
+            if links:
+                self.send_message('Você tem as seguintes URLs cadastradas:')
+                [self.send_message(i, '-', data['url']) for i, data in enumerate(links)]
+            else:
+                self.send_message('Você não tem URLs cadastradas :(')
         elif self.context == 'user_sent_photo':
             self.send_message('Desculpe, só sei ler textos')
             self.context = ''
