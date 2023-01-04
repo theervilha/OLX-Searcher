@@ -41,6 +41,7 @@ def send_message(request):
 def get_links_per_user(request):
     DB = Database()
     chat_id = request.GET.get("chat_id", "")
+    DB.close_db()
     return JsonResponse(DB.get_links_per_user(chat_id=chat_id),  safe=False)
 
 def insert_search(request):
@@ -48,6 +49,7 @@ def insert_search(request):
     chat_id = request.GET.get("chat_id", "")
     url = request.GET.get("url", "")
     DB.insert_search(chat_id, url)
+    DB.close_db()
     return HttpResponse('Inserido!')
 
 def update_last_time_runned_link(request):
@@ -55,6 +57,7 @@ def update_last_time_runned_link(request):
     chat_id = request.GET.get("chat_id", "")
     url = request.GET.get("url", "")
     DB.update_last_time_runned_search(chat_id, url)
+    DB.close_db()
     return HttpResponse('Atualizado!')
 
 def delete_search(request):
@@ -62,4 +65,5 @@ def delete_search(request):
     chat_id = request.GET.get("chat_id", "")
     url = request.GET.get("url", "")
     DB.delete_search(chat_id, url)
+    DB.close_db()
     return HttpResponse('Deletado!')
