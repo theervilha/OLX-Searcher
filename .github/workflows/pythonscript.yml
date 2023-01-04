@@ -1,0 +1,32 @@
+name: Python Script
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI or API.
+on:
+  schedule:
+    - cron: '*/2 * * * *'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  build:
+  
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: execute python script
+        env: 
+          SOME_SECRET: ${{ secrets.some_secret }}
+        run: python .github/workflows/send_products_to_everyone.py
