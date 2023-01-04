@@ -1,3 +1,4 @@
+cryptography==38.0.4
 APScheduler==3.6.3
 Django==4.1
 djangorestframework==3.14.0
