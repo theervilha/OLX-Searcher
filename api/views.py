@@ -41,8 +41,9 @@ def send_message(request):
 def get_links_per_user(request):
     DB = Database()
     chat_id = request.GET.get("chat_id", "")
+    links_per_user = DB.get_links_per_user(chat_id=chat_id)
     DB.close_db()
-    return JsonResponse(DB.get_links_per_user(chat_id=chat_id),  safe=False)
+    return JsonResponse(links_per_user,  safe=False)
 
 def insert_search(request):
     DB = Database()
