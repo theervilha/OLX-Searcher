@@ -3,12 +3,29 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-from .Telegram import Telegram
-T = Telegram()
-
-# Create your views here.
 def index(request):
     return HttpResponse('opa')
+
+from .Bot import Bot
+Bot = Bot()
+
+@csrf_exempt
+def handle_message(request):
+    print('Recebeu')
+    if request.method =='POST':
+        print('Recebeu POST')
+        response = json.loads(request.body)
+        
+        print('RESPOSTA:\n',response)
+        Bot.get_data_from_response(response)
+        Bot.get_bot_response()
+        Bot.store_data()
+        
+        return JsonResponse({'status': 'true'})
+    
+    
+from .Telegram import Telegram
+T = Telegram()    
 
 def send_message(request):
     message = request.GET.get("message", "")
