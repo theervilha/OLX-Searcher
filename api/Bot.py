@@ -67,7 +67,7 @@ class Bot:
             self.context = 'ask_link_to_search_products'
             
         elif self.user_message == '/cancelar':
-            links = requests.get(f'{APP_HOST}/api/search/insert_search?chat_id={self.chat_id}&url={self.url}').json()
+            links = requests.get(f'{APP_HOST}/api/search/get_links_per_user?chat_id={self.chat_id}&url={self.url}').json()
             if links:
                 self.send_message('Você tem as seguintes URLs cadastradas:')
                 [self.send_message(i, '-', data['url']) for i, data in enumerate(links)]
