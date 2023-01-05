@@ -47,10 +47,7 @@ class OLXSpider(scrapy.Spider):
                         'last_runned_date': last_runned_date
                     }
                 )
-                              
-            requests.get(f'{APP_HOST}/api/search/update_last_time_runned_link', params={'chat_id': chat_id, 'url': main_url})
-
-
+                
     def get_products_in_page(self, response): 
         chat_id = response.meta.get('chat_id')
         main_url = response.meta.get('main_url')
@@ -169,6 +166,7 @@ if __name__ == '__main__':
         except KeyError:
             data_by_chat_id[chat_id] = [{'url': url, 'products': products_by_url}]
             
+        requests.get(f'{APP_HOST}/api/search/update_last_time_runned_link', params={'chat_id': chat_id, 'url': url})
 
     def send_products(data_by_chat_id):
         for chat_id, data in data_by_chat_id.items():
