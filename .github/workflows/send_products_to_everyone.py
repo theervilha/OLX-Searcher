@@ -36,8 +36,7 @@ class OLXSpider(scrapy.Spider):
     def start_requests(self):
         for row in self.data:
             chat_id, main_url, last_runned_date = row.values()
-            #last_runned_date = datetime.strptime(last_runned_date[:-4], '%Y-%m-%dT%H:%M:%S')
-            last_runned_date = datetime.strptime("1900-01-04T16:0:0.711"[:-4], '%Y-%m-%dT%H:%M:%S')
+            last_runned_date = datetime.strptime(last_runned_date[:-4], '%Y-%m-%dT%H:%M:%S')
             
             for url in self.generate_next_pages_from_url(main_url):
                 yield scrapy.Request(
