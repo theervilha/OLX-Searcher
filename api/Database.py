@@ -8,13 +8,13 @@ load_dotenv()
 
 class Database():
     message_table = 'message'
-    create_message_table = f"""CREATE TABLE IF NOT EXISTS {message_table} (id serial PRIMARY KEY, chat_id int, context varchar(100), user_message text, bot_response text, created_at_user_message timestamp);"""
+    create_message_table = f"""CREATE TABLE IF NOT EXISTS {message_table} (id serial PRIMARY KEY, chat_id bigint, context varchar(100), user_message text, bot_response text, created_at_user_message timestamp);"""
     query_insert_messages = f"""INSERT INTO {message_table} (chat_id, context, user_message, bot_response, created_at_user_message) VALUES (%s, %s, %s, %s, %s)"""
     query_select_messages_by_chat_id = f"""SELECT * FROM {message_table} WHERE chat_id = %s"""
     drop_message_table = f"""DELETE FROM {message_table}"""
     
     search_table = 'search'
-    create_search_table = f"""CREATE TABLE IF NOT EXISTS {search_table} (id serial PRIMARY KEY, chat_id int, url text, last_time_runned timestamp);"""
+    create_search_table = f"""CREATE TABLE IF NOT EXISTS {search_table} (id serial PRIMARY KEY, chat_id bigint, url text, last_time_runned timestamp);"""
     query_select_links_per_user = f"""SELECT chat_id, url, last_time_runned FROM {search_table}"""
     query_select_links_by_chat_id = f"""SELECT chat_id, url, last_time_runned FROM {search_table} WHERE chat_id=%s"""
     query_insert_search = f"""INSERT INTO {search_table} (chat_id, url, last_time_runned) VALUES (%s, %s, %s)"""
