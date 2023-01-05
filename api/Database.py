@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import execute_values
+from psycopg2.errors import InFailedSqlTransaction
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -27,10 +28,6 @@ class Database():
                  user=os.environ.get('database_user'),
                  password=os.environ.get('database_password')
         ):
-        print("host:",host)
-        print("dbname:",dbname)
-        print("user:",user)
-        print("password:",password)
         self.conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password)
         self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         self.create_tables_if_not_exists()
@@ -41,8 +38,11 @@ class Database():
         self.commit()
     
     def get_messages_by_chat_id(self, chat_id):
-        self.cur.execute(self.query_select_messages_by_chat_id % chat_id)
-        return self.cur.fetchall()
+        try:
+            self.cur.execute(self.query_select_messages_by_chat_id % chat_id)
+            return self.cur.fetchall()
+        except InFailedSqlTransaction:
+            return []
     
     def insert_messages(self, values):
         self.cur.execute(self.query_insert_messages, values)
