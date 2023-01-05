@@ -12,8 +12,13 @@ from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 
 from datetime import datetime, timedelta
-import time
 import re
+import requests
+
+APP_HOST = 'https://olx-seacher.vercel.app'
+def send_message(message, chat_id, buttons='', disable_web_page_preview=''):
+    return requests.get(f'''{APP_HOST}/api/send_message?message={message}&chat_id={chat_id}&buttons={buttons}&disable_web_page_preview={disable_web_page_preview}''')
+
 
 class OLXSpider(scrapy.Spider):
     name = "products"
@@ -25,30 +30,53 @@ class OLXSpider(scrapy.Spider):
     price_l = '.sc-1kn4z61-1.dGMPPn span::text'
     date_l = '.sc-11h4wdr-0.javKJU::text'
 
-    def __init__(self, urls, **kwargs):
-        self.urls = urls
-        self.get_until_this_date = kwargs.get('get_until_this_date')
+    def __init__(self, data, **kwargs):
+        self.data = data
     
     def start_requests(self):
-        for url in self.urls:
-            yield scrapy.Request(url=url, callback=self.get_products_in_page, headers=self.headers)
+        for row in self.data:
+            chat_id, main_url, last_runned_date = row.values()
+            #last_runned_date = datetime.strptime(last_runned_date[:-4], '%Y-%m-%dT%H:%M:%S')
+            last_runned_date = datetime.strptime("1900-01-04T16:0:0.711"[:-4], '%Y-%m-%dT%H:%M:%S')
+            
+            for url in self.generate_next_pages_from_url(main_url):
+                yield scrapy.Request(
+                    url=url, callback=self.get_products_in_page, headers=self.headers,
+                    meta={
+                        'chat_id': chat_id,
+                        'main_url': main_url,
+                        'last_runned_date': last_runned_date
+                    }
+                )
+                              
+            requests.get(f'{APP_HOST}/api/search/update_last_time_runned_link', params={'chat_id': chat_id, 'url': main_url})
+
 
     def get_products_in_page(self, response): 
+        chat_id = response.meta.get('chat_id')
+        main_url = response.meta.get('main_url')
+        last_runned_date = response.meta.get('last_runned_date')
+        
         for self.element in self.get_products(response):
             product_date = self.get_product_date()
 
+            
             # If passed a limit date to get products, verify.
-            if self.get_until_this_date:
-                if product_date <= self.get_until_this_date:
-                    raise CloseSpider('All products were taken by the deadline.')
-
+            if last_runned_date:
+                if product_date <= last_runned_date:
+                    return
+                    
             yield {
+                'chat_id': chat_id,
+                'main_url': main_url,
+                
                 'product_link': self.element.css('::attr(href)').get(),
                 'title': self.element.css(self.title_l).get(),
                 'img': self.element.css(self.img_l).get(),
                 'date': product_date,
                 'price': self.get_product_price(),
             }
+            
     
     def get_products(self, response):
         return response.css(self.product_l)
@@ -88,36 +116,27 @@ class OLXSpider(scrapy.Spider):
                     self.date = re.sub(br_month, usa_month, self.date)        
             self.date = datetime.strptime(self.date, '%d %b, %H:%M')
 
+    def generate_next_pages_from_url(self, url, num_pages=2):
+        start_i = url.find('?')+1
+        if "o=" not in url and start_i != '-1':
+            return [f'{url[:start_i]}o={i}&{url[start_i:]}' for i in range(1, num_pages+1 )]
+        elif "o=" not in url and start_i == '-1':
+            return [f'{url}?o={i}' for i in range(1, num_pages+1 )]
+        elif "o=" in url:
+            return [re.sub('o=.*?&', f'o={i}&' , url, flags=re.DOTALL) for i in range(1, num_pages+1 )]
 
-
-def generate_next_five_pages_from_url(url, num_pages=2):
-    start_i = url.find('?')+1
-    if "o=" not in url and start_i != '-1':
-        return [f'{url[:start_i]}o={i}&{url[start_i:]}' for i in range(1, num_pages+1 )]
-    elif "o=" not in url and start_i == '-1':
-        return [f'{url}?o={i}' for i in range(1, num_pages+1 )]
-    elif "o=" in url:
-        return [re.sub('o=.*?&', f'o={i}&' , url, flags=re.DOTALL) for i in range(1, num_pages+1 )]
-
-def get_products(url, **kwargs):
-    urls = generate_next_five_pages_from_url(url)
-    print('urls geradas:',urls)
-
+def get_products(links_per_user):
+    
     items = []
     def collect_items(item, response, spider):
         items.append(item)
-
-    configure_logging()
-    settings = get_project_settings()
     
     crawler = Crawler(OLXSpider)
     crawler.signals.connect(collect_items, signals.item_scraped)
     
-    runner = CrawlerRunner(settings)
-    runner.crawl(crawler, urls=urls,  **kwargs)
-    d = runner.join()
-    d.addBoth(lambda _: reactor.stop())
-    reactor.run() 
+    process = CrawlerProcess()
+    process.crawl(crawler, data=links_per_user)
+    process.start()
 
     return items
 
@@ -128,32 +147,52 @@ def get_products(url, **kwargs):
 import requests
 
 def send_message(message, chat_id, buttons='', disable_web_page_preview=''):
-  return requests.get(f'''https://olx-seacher.vercel.app/api/send_message?message={message}&chat_id={chat_id}&buttons={buttons}&disable_web_page_preview={disable_web_page_preview}''')
+    return requests.get(f'''https://olx-seacher.vercel.app/api/send_message?message={message}&chat_id={chat_id}&buttons={buttons}&disable_web_page_preview={disable_web_page_preview}''')
 
 if __name__ == '__main__':
-  print('Started action')
-  
-  message = 'teste'
-  chat_id = 800673480
-  qtd_products = 60
-  url = "https://rn.olx.com.br/moveis?pe=300&ps=100&q=mesa"
-  
-  products = get_products(url)[:qtd_products]
-  print('qtd products:',len(products))
-  if products:
-    send_message(f'Olá mais uma vez!! Hoje eu extraí {len(products)} novos produtos. Dá uma olhada:', chat_id)
-    for i, product in enumerate(products):
-      product_price = f"R$ {product['price']}" if product['price'] > 0 else "Preço não informado"
-      send_message(f"""
-          {i+1}° - {product_price} - <a href="{product['product_link']}">{product['title']}</a>
-        """, 
-        chat_id,
-        disable_web_page_preview=True
-      )
-    send_message('Por hoje é só. Espero que esteja gostando de receber novos produtos diariamente!\n\nLembrando que se você não deseja mais receber mensagens como essa, digite /cancelar :)', chat_id)
-  else:
-    send_message('Poxa, eu não encontrei nenhuma novidade de ontem para hoje. Mas pode deixar que se eu encontrar alguma amanhã, eu lhe aviso!!', chat_id)
-    send_message('Lembrando que se você não deseja mais receber mensagens como essa, digite /cancelar :)', chat_id)
-    
+    links_per_user = requests.get(f'{APP_HOST}/api/search/get_links_per_user').json()
+    print('links per user:',links_per_user)
+    products = get_products(links_per_user)
 
-  print('Finished action')
+    def get_products_associated(chat_id, url):
+        return list(filter(
+            lambda product: product['main_url'] == url and product['chat_id'] == chat_id,
+            products
+        ))
+
+    data_by_chat_id = {}
+    for row in links_per_user:
+        url, chat_id = row['url'], row['chat_id']
+        products_by_url = get_products_associated(chat_id, url)
+        
+        try:
+            data_by_chat_id[chat_id].append({'url': url, 'products': products_by_url})
+        except KeyError:
+            data_by_chat_id[chat_id] = [{'url': url, 'products': products_by_url}]
+            
+
+    def send_products(data_by_chat_id):
+        for chat_id, data in data_by_chat_id.items():
+            send_message(f'Olá 😁!! Vou te passar as informações que consegui hoje:', chat_id)
+            for row in data:
+                url = row['url']
+                products = row['products']
+                                
+                if products:
+                    send_message(f'No link {url}, eu <b>extraí {len(products)}</b> novos produtos. Dá uma olhada 🤗:'.replace('&', '%26'), chat_id, disable_web_page_preview=True)
+                    for i, product in enumerate(products):
+                        product_price = f"R$ {product['price']}" if product['price'] > 0 else "Preço não informado"
+                        send_message(f"""
+                                {i+1}° - {product_price} - <a href="{product['product_link']}">{product['title']}</a>
+                            """, 
+                            chat_id,
+                            disable_web_page_preview=True
+                        )
+                else:
+                    send_message(f'Poxa 😕, <b>não encontrei</b> nenhuma novidade no link {url}'.replace('&', '%26'), chat_id, disable_web_page_preview=True)
+                    
+            send_message('Por hoje é só. Espero que esteja gostando que eu monitore os produtos para você todos os dias!', chat_id)
+            send_message('Lembrando que se você não deseja mais receber mensagens como essa, digite /cancelar :)', chat_id)
+            
+            
+    send_products(data_by_chat_id)

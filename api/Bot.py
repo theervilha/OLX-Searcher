@@ -58,7 +58,7 @@ class Bot:
                 print('context:',self.context)
                 if self.context:
                     self.context = ''
-                    requests.get(f'{APP_HOST}/api/search/insert_search?chat_id={self.chat_id}&url={self.url}')
+                    requests.get(f'{APP_HOST}/api/search/insert_search', params={'chat_id': self.chat_id, 'url':self.url})
                     self.send_message('Perfeito! Amanhã, cerca de 12h, estou lhe enviando os produtos')
             else:
                 self.context = 'gived_up_to_search_products_in_link'
@@ -70,7 +70,7 @@ class Bot:
             links = requests.get(f'{APP_HOST}/api/search/get_links_per_user?chat_id={self.chat_id}&url={self.url}').json()
             if links:
                 self.send_message('Você tem as seguintes URLs cadastradas:')
-                [self.send_message(i, '-', data['url']) for i, data in enumerate(links)]
+                [self.send_message(f"{i+1} - {data['url']}") for i, data in enumerate(links)]
             else:
                 self.send_message('Você não tem URLs cadastradas :(')
         elif self.context == 'user_sent_photo':

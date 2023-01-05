@@ -58,11 +58,13 @@ class Database():
     
     def insert_search(self, chat_id, url):
         date = datetime.now().replace(year=1900)
+        date = date.replace(hour=date.hour-3)
         self.cur.execute(self.query_insert_search, (chat_id, url, date))
         self.commit()
         
     def update_last_time_runned_search(self, chat_id, url):
         date = datetime.now().replace(year=1900)
+        date = date.replace(hour=date.hour-3)
         self.cur.execute(self.query_update_search_last_time_runned, (date, chat_id, url))
         self.commit()
         
