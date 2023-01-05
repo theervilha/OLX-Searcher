@@ -21,5 +21,9 @@ class Telegram:
                     ]
                 ]
             })
+        else:  
+            data['reply_markup'] = json.dumps({
+                'hide_keyboard': True
+            })
             
         return requests.post(self.send_message_url, data=data)
