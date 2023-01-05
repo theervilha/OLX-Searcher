@@ -3,7 +3,7 @@ name: Python Script
 # Controls when the action will run. Workflow runs when manually triggered using the UI or API.
 on:
   schedule:
-    - cron: '*/2 * * * *'
+    - cron: '0 5 * * *'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -27,6 +27,4 @@ jobs:
           pip install -r requirements.txt
           
       - name: execute python script
-        env: 
-          SOME_SECRET: ${{ secrets.some_secret }}
         run: python .github/workflows/send_products_to_everyone.py
