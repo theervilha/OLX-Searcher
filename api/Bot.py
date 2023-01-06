@@ -105,7 +105,7 @@ class Bot:
                 if self.context:
                     self.context = ''
                     requests.get(f'{APP_HOST}/api/search/insert_search', params={'chat_id': self.chat_id, 'url':self.url})
-                    self.send_message('Perfeito! Amanhã, por volta das 12h, estou lhe enviando os produtos. \n\nLembrando que se você quiser cancelar a qualquer momento, é só digitar /cancelar. \nE se você quiser monitorar outro link, digite /monitorar 😉')
+                    self.send_message('Perfeito! Todos os dias, por volta das 12h, estou lhe enviando os produtos. \n\nLembrando que se você quiser cancelar a qualquer momento, é só digitar /cancelar. \nE se você quiser monitorar outro link, digite /monitorar 😉')
             else:
                 self.context = ''
                 self.send_message('Tudo bem. Se você ainda quiser prosseguir, digite "Monitorar" nessa conversa e siga o passo a passo! 😉')
