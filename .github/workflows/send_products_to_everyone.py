@@ -112,7 +112,7 @@ class OLXSpider(scrapy.Spider):
                     self.date = re.sub(br_month, usa_month, self.date)        
             self.date = datetime.strptime(self.date, '%d %b, %H:%M')
 
-    def generate_next_pages_from_url(self, url, num_pages=2):
+    def generate_next_pages_from_url(self, url, num_pages=4):
         start_i = url.find('?')+1
         if "o=" not in url and start_i != '-1':
             return [f'{url[:start_i]}o={i}&{url[start_i:]}' for i in range(1, num_pages+1 )]
@@ -147,7 +147,6 @@ def send_message(message, chat_id, buttons='', disable_web_page_preview=''):
 
 if __name__ == '__main__':
     links_per_user = requests.get(f'{APP_HOST}/api/search/get_links_per_user').json()
-    print('links per user:',links_per_user)
     products = get_products(links_per_user)
 
     def get_products_associated(chat_id, url):
