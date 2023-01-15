@@ -2,7 +2,7 @@ from datetime import datetime
 from .Telegram import Telegram
 
 from .Database import Database
-from .utils import find_url_in_text, is_olx_url
+from .utils import find_url_in_text, is_olx_url, format_url_to_get_most_recent_products
 
 import requests
 import os
@@ -90,6 +90,7 @@ class Bot:
                     if is_olx_url(self.url):
                         self.context = 'confirm_search_link'
                         self.send_message(f'Você confirma que eu lhe envie os novos produtos postados diariamente do site {self.url}?', buttons=['Sim', 'Não'], disable_web_page_preview=True)
+                        self.url = format_url_to_get_most_recent_products(self.url)
                     else:
                         self.context = 'not_handled - wrong_url'
                         self.send_message('Parece que o link que você enviou não é do site da OLX.')
