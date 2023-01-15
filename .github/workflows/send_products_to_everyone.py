@@ -83,8 +83,11 @@ class OLXSpider(scrapy.Spider):
         return self.date
 
     def get_product_price(self):
-        price = self.element.css(self.price_l).get()[3:].replace('.', '')
-        return float(price) if price != '' else price
+        try:
+            price = self.element.css(self.price_l).get()[3:].replace('.', '')
+            return float(price) if price != '' else price
+        except TypeError:
+            return ''
 
     def clean_date(self):
         date_str_from_brazil_to_usa = {
@@ -112,7 +115,7 @@ class OLXSpider(scrapy.Spider):
                     self.date = re.sub(br_month, usa_month, self.date)        
             self.date = datetime.strptime(self.date, '%d %b, %H:%M')
 
-    def generate_next_pages_from_url(self, url, num_pages=4):
+    def generate_next_pages_from_url(self, url, num_pages=6):
         start_i = url.find('?')+1
         if "o=" not in url and start_i != '-1':
             return [f'{url[:start_i]}o={i}&{url[start_i:]}' for i in range(1, num_pages+1 )]
@@ -156,6 +159,7 @@ if __name__ == '__main__':
         ))
 
     data_by_chat_id = {}
+    print('\n\n\n!!!!DEBUGING\n')
     for row in links_per_user:
         url, chat_id = row['url'], row['chat_id']
         products_by_url = get_products_associated(chat_id, url)
@@ -166,12 +170,17 @@ if __name__ == '__main__':
             data_by_chat_id[chat_id] = [{'url': url, 'products': products_by_url}]
             
         requests.get(f'{APP_HOST}/api/search/update_last_time_runned_link', params={'chat_id': chat_id, 'url': url})
+        print('url:',url)
+        print('chat_id:',chat_id)
+        print('products_by_url:',products_by_url)
+        print('data_by_chat_id:',data_by_chat_id)
+
 
     def send_products(data_by_chat_id):
         for chat_id, data in data_by_chat_id.items():
             send_message(f'Olá 😁!! Vou te passar as informações que consegui hoje:', chat_id)
             for row in data:
-                url = row['url']
+                url = row['url'].replace('&', '%26').replace(' ', '%20')
                 products = row['products']
                                 
                 if products:
@@ -185,7 +194,7 @@ if __name__ == '__main__':
                             disable_web_page_preview=True
                         )
                 else:
-                    send_message(f'Poxa 😕, <b>não encontrei</b> nenhuma novidade no link {url}'.replace('&', '%26'), chat_id, disable_web_page_preview=True)
+                    send_message(f'Poxa 😕, <b>não encontrei</b> nenhuma novidade no link {url}', chat_id, disable_web_page_preview=True)
                     
             send_message('Por hoje é só. Espero que esteja gostando que eu monitore os produtos para você todos os dias!', chat_id)
             send_message('Lembrando que se você não deseja mais receber mensagens como essa, digite /cancelar :)', chat_id)
