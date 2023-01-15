@@ -87,7 +87,7 @@ class OLXSpider(scrapy.Spider):
             price = self.element.css(self.price_l).get()[3:].replace('.', '')
             return float(price) if price != '' else price
         except TypeError:
-            return ''
+            return 0
 
     def clean_date(self):
         date_str_from_brazil_to_usa = {
@@ -173,7 +173,7 @@ if __name__ == '__main__':
         print('url:',url)
         print('chat_id:',chat_id)
         print('products_by_url:',products_by_url)
-        print('data_by_chat_id:',data_by_chat_id)
+        print('data_by_chat_id:',data_by_chat_id,'\n\n\n')
 
 
     def send_products(data_by_chat_id):
