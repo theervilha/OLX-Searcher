@@ -2,7 +2,10 @@
 
 Um chatbot que monitora novos produtos da OLX e os envia para você via Telegram, grátis! [Clique aqui para conversar](https://t.me/OLXSearcher_bot) com ele!
 
-Vídeo do bot funcionando:
+[Clique aqui](https://drive.google.com/file/d/191knF0aiboA8XGNtih2bnTMOnD1EfnOh/view?usp=sharing) para ver uma demonstração do OLX Searcher.
+
+Veja como o bot traz as novidades:<br>
+![olxsearcher](https://user-images.githubusercontent.com/78512748/212734743-87296f4f-fc0c-4443-ae40-94a449d4fe4f.png)
 
 ### Tecnologias
 
