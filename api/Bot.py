@@ -82,7 +82,7 @@ class Bot:
         
         elif self.user_history and self.user_history[-1]['context'] in ['ask_link_to_search_products', 'how_to_find_link', 'not_handled - not_found_link', 'not_handled - wrong_url', 'gived_up_to_search_products_in_link']:
             if self.user_message == 'Como achar o link?':
-                self.send_message('Faça assim: \n1. Entre no site da OLX pelo navegador: https://olx.com.br/\n2. Pesquise o produto\n3.Aplique os filtros do site, se você desejar.\n4. Lá em cima, copie o endereço do link e me envie aqui. \n\nEstou aguardando! :D')
+                self.send_message('Faça assim: \n1. Entre no site da OLX pelo navegador: https://olx.com.br/\n2. Pesquise o produto\n3. Aplique os filtros do site, se você desejar.\n4. Lá em cima, copie o endereço do link e me envie aqui.\n5. Veja <a href="https://drive.google.com/file/d/191knF0aiboA8XGNtih2bnTMOnD1EfnOh/view?usp=sharing">este vídeo</a> se ainda tiver dúvidas. \n\nEstou aguardando! :D')
                 self.context = 'how_to_find_link'
             else:    
                 self.url = find_url_in_text(self.user_message)
@@ -94,12 +94,12 @@ class Bot:
                     else:
                         self.context = 'not_handled - wrong_url'
                         self.send_message('Parece que o link que você enviou não é do site da OLX.')
-                        self.send_message('Faça assim: \n1. Entre no site da OLX pelo navegador: https://olx.com.br/\n2. Pesquise o produto\n3.Aplique os filtros do site, se você desejar.\n4. Lá em cima, copie o endereço do link e me envie aqui. \n\nEstou aguardando! :D')
+                        self.send_message('Faça assim: \n1. Entre no site da OLX pelo navegador: https://olx.com.br/\n2. Pesquise o produto\n3. Aplique os filtros do site, se você desejar.\n4. Lá em cima, copie o endereço do link e me envie aqui.\n5. Veja <a href="https://drive.google.com/file/d/191knF0aiboA8XGNtih2bnTMOnD1EfnOh/view?usp=sharing">este vídeo</a> se ainda tiver dúvidas. \n\nEstou aguardando! :D')
 
                 else:
                     self.context = 'not_handled - not_found_link'
                     self.send_message('Parece que você não me enviou o link corretamente!')
-                    self.send_message('Faça assim: \n1. Entre no site da OLX pelo navegador: https://olx.com.br/\n2. Pesquise o produto\n3.Aplique os filtros do site, se você desejar.\n4. Lá em cima, copie o endereço do link e me envie aqui. \n\nEstou aguardando! :D')
+                    self.send_message('Faça assim: \n1. Entre no site da OLX pelo navegador: https://olx.com.br/\n2. Pesquise o produto\n3. Aplique os filtros do site, se você desejar.\n4. Lá em cima, copie o endereço do link e me envie aqui.\n5. Veja <a href="https://drive.google.com/file/d/191knF0aiboA8XGNtih2bnTMOnD1EfnOh/view?usp=sharing">este vídeo</a> se ainda tiver dúvidas. \n\nEstou aguardando! :D')
                 
         elif self.user_history and self.user_history[-1]['context'] == 'confirm_search_link':
             if self.user_message.lower() == 'sim':
